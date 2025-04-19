@@ -50,10 +50,19 @@ DISCORD_TOKEN=your_token_here
 4. Configure settings in `src/config.ts`:
 ```typescript
 export const config = {
-  PRICE_DECIMAL_PLACES: 4,              // Decimal places for price display
-  REWARDS_CHECK_INTERVAL: 60,           // Rewards check interval in seconds
-  REWARDS_NOTIFICATION_THRESHOLD: 60,    // Notify when less than 60 seconds remaining
-  REWARDS_NOTIFICATION_CHANNEL: "id"     // Discord channel ID for notifications
+  // Price Display Settings
+  PRICE_DECIMAL_PLACES: 4,        // Number of decimal places for price display
+  
+  // Status Update Settings
+  UPDATE_INTERVAL: 60,            // Bot status update interval (seconds)
+  
+  // Discord Settings
+  DEFAULT_GUILD_ID: "guild_id",   // Your Discord server ID
+
+  // Rewards Notification Settings
+  REWARDS_CHECK_INTERVAL: 60,     // How often to check rewards (seconds)
+  REWARDS_NOTIFICATION_THRESHOLD: 21600, // When to notify before round end (6 hours in seconds)
+  REWARDS_NOTIFICATION_CHANNEL: "channel_id", // Channel ID for notifications
 } as const;
 ```
 
