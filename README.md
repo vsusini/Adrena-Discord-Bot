@@ -4,29 +4,30 @@ A Discord bot that tracks token prices, staking rewards, and wallet balances for
 
 ## Features
 
-- Real-time token price tracking for ADX and ALP tokens
+- Real-time token price tracking for ADX tokens
 - Staking rewards monitoring and notifications
-- Mutagen points and leaderboard rank display
-- Automatic status updates showing current token prices
-- Discord command integration
+- Mutagen points tracking and leaderboard rank display
+- Automated round-end notifications for staking rewards
+- Embedded message formatting with Discord Markdown
 
 ## Commands
 
 - `/price` - Get current token price
-  - Options: `ALP Token`, `ADX Token`
-  - Response: Current price in USD (ephemeral)
+  - Options: `ADX Token`
+  - Response: Current price in USD with 4 decimal places (ephemeral)
 - `/mutagen <wallet>` - Get mutagen points and rank
   - Parameters: `wallet` - Solana wallet address
-  - Response: Total points and global rank (ephemeral)
+  - Response: Total points and global rank in formatted embed (ephemeral)
 - `/rewards` - Check staking rewards
-  - Response: Current pending USDC rewards and time remaining in round (ephemeral)
+  - Response: Current pending USDC rewards and time remaining using Discord timestamps (ephemeral)
 
 ## Prerequisites
 
 - Node.js 16.x or higher
 - npm 7.x or higher
-- A Discord bot token
+- Discord bot token
 - Discord channel for rewards notifications
+- Solana wallet for staking account monitoring
 
 ## Setup
 
@@ -49,105 +50,94 @@ DISCORD_TOKEN=your_token_here
 4. Configure settings in `src/config.ts`:
 ```typescript
 export const config = {
-  UPDATE_INTERVAL: 60 * 1, // Update interval in seconds
-  PRICE_DECIMAL_PLACES: 4, // Decimal places for price display
-  DEFAULT_GUILD_ID: "your_guild_id", // Your Discord server ID
-  REWARDS_CHECK_INTERVAL: 60 * 1, // Rewards check interval in seconds
-  REWARDS_NOTIFICATION_CHANNEL: "your_channel_id", // Channel for rewards notifications
-  REWARDS_NOTIFICATION_THRESHOLD: 60 // Notify when less than 60 seconds remaining
+  PRICE_DECIMAL_PLACES: 4,              // Decimal places for price display
+  REWARDS_CHECK_INTERVAL: 60,           // Rewards check interval in seconds
+  REWARDS_NOTIFICATION_THRESHOLD: 60,    // Notify when less than 60 seconds remaining
+  REWARDS_NOTIFICATION_CHANNEL: "id"     // Discord channel ID for notifications
 } as const;
 ```
 
-5. Build and start the bot:
+## Development
+
+1. Start in development mode with hot-reload:
+```bash
+npm run dev
+```
+
+2. Run tests:
+```bash
+npm test
+# or in watch mode
+npm run test:watch
+```
+
+3. Build for production:
 ```bash
 npm run build
 npm start
 ```
 
-For development with hot-reload:
-```bash
-npm run dev
-```
-
-## Required Permissions
-
-The bot needs the following Discord permissions:
-- View Channels
-- Send Messages
-- Change Nickname
-- Read Message History
-- Use Slash Commands
-- Embed Links
-
-## Available Scripts
-
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm run dev` - Run the bot in development mode with hot-reload
-- `npm start` - Run the compiled bot
-- `npm test` - Run unit tests
-
 ## Project Structure
 
+### Source Code
 ```
-├── src/
-│   ├── commands/
-│   │   ├── price.ts          # Price command implementation
-│   │   ├── mutagen.ts        # Mutagen command implementation
-│   │   ├── rewards.ts        # Rewards command implementation
-│   │   └── index.ts
-│   ├── services/
-│   │   ├── statusManager.ts   # Bot status management
-│   │   ├── rewardsManager.ts  # Rewards notification service
-│   │   └── index.ts
-│   ├── utils/
-│   │   ├── api.ts            # API utility functions
-│   │   ├── timeUtils.ts      # Time formatting utilities
-│   │   ├── solanaUtils.ts    # Solana interaction utilities
-│   │   └── types.ts          # Type definitions
-│   ├── config.ts             # Configuration settings
-│   ├── client.ts             # Main bot implementation
-│   └── index.ts              # Entry point
-├── tests/
-│   ├── commands/
-│   │   └── price.test.ts      # Unit tests for price command
-│   └── utils/
-│       └── api.test.ts        # Unit tests for utility functions
-├── .env                        # Environment variables
-├── .gitignore                  # Git ignore file
-├── .eslintrc.json              # ESLint configuration
-├── tsconfig.json               # TypeScript configuration
-├── package.json                # Project dependencies
-└── README.md                   # Project documentation
+src/
+├── commands/                  # Discord command implementations
+│   ├── index.ts             # Command registration and routing
+│   ├── price.ts             # Price checking command handler
+│   ├── mutagen.ts           # Mutagen points/rank command handler
+│   └── rewards.ts           # Staking rewards command handler
+│
+├── services/                 # Core background services
+│   ├── statusManager.ts     # Handles bot status/price updates
+│   └── rewardsManager.ts    # Manages staking rewards notifications
+│
+├── utils/                    # Shared utility functions
+│   ├── api.ts              # External API interaction functions
+│   ├── formatters.ts       # Value formatting (USD, addresses, etc)
+│   ├── timeUtils.ts        # Time calculations and formatting
+│   ├── constants.ts        # Shared configuration constants
+│   ├── solanaUtils.ts      # Solana blockchain interactions
+│   ├── types.ts            # TypeScript type definitions
+│   └── adrena.ts           # Adrena-specific blockchain utils
+│
+├── client.ts                 # Discord bot client setup
+├── config.ts                # Environment & bot configuration
+└── index.ts                 # Application entry point
 ```
 
-## Dependencies
+### Testing Structure
+```
+tests/
+├── utils/                    # Utility function tests
+│   ├── formatters.test.ts   # Tests for value formatting
+│   └── timeUtils.test.ts    # Tests for time calculations
+│
+└── commands/                 # Command handler tests
+```
 
-### Production
-- `discord.js` - Discord API wrapper
-- `dotenv` - Environment variable management
-- `axios` - HTTP client
+## Testing
 
-### Development
-- `typescript` - TypeScript compiler
-- `ts-node` - TypeScript execution engine
-- `@types/node` - Node.js type definitions
-- `nodemon` - Development auto-reload
-- `jest` - Testing framework
-- `@types/jest` - Jest type definitions
-- `eslint` - Code linting
-- `prettier` - Code formatting
+The project uses Jest for testing. Test files are located in the `tests` directory:
 
-## Development
+```
+tests/
+├── utils/
+│   ├── formatters.test.ts    # Tests for number/text formatting
+│   └── timeUtils.test.ts     # Tests for time calculations
+└── commands/
+    └── price.test.ts         # Tests for price command
+```
 
-1. Make sure you have Node.js and npm installed
-2. Install dependencies: `npm install`
-3. Create `.env` file with your bot token
-4. Start development server: `npm run dev`
+Run tests with coverage:
+```bash
+npm test -- --coverage
+```
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
+2. Create a feature branch
+3. Add tests for new features
+4. Ensure all tests pass
 5. Open a pull request
