@@ -23,4 +23,8 @@ export const formatters = {
   codeBlock: (value: string | number): string => {
     return `\`${value}\``;
   },
+
+  rewardsSummary: (rewards: string, roundEndTimestamp: number): string => {
+    return `USDC Rewards: \`$${formatters.usdValue(rewards)}\`\nRound completion <t:${Math.floor(roundEndTimestamp)}:R>`;
+  },
 };

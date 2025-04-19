@@ -38,7 +38,7 @@ export async function handleRewardsCommand(
         .setThumbnail(CONSTANTS.IMAGES.LOGO)
         .addFields({
           name: "💰 Rewards Summary",
-          value: `USDC Rewards: \`$${formattedRewards}\`\nRound ends <t:${roundEndTimestamp}:R>`,
+          value: formatters.rewardsSummary(pendingUsdcRewards, roundEndTimestamp),
           inline: false,
         });
 
