@@ -10,7 +10,7 @@ import { PositionTracker } from '../services/positionTracker';
 import { formatters } from '../utils/formatters';
 import { formatEntryPrice } from './track';
 
-export const data = new SlashCommandBuilder()
+export const command = new SlashCommandBuilder()
     .setName('untrack')
     .setDescription('Stop tracking a position');
 

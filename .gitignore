@@ -42,3 +42,4 @@ coverage/
 # Database and data files
 data/
 *.db
+/Adrena-TS-Discord-Bot

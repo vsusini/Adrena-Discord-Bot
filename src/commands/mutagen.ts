@@ -4,11 +4,22 @@ import {
   EmbedBuilder,
   ColorResolvable,
   APIEmbedField,
+  SlashCommandBuilder,
 } from "discord.js";
 import { fetchMutagenData } from "../utils/api";
 import { CommandOption } from "../utils/types";
 import { CONSTANTS } from "../utils/constants";
 import { formatters } from "../utils/formatters";
+
+export const command = new SlashCommandBuilder()
+  .setName("mutagen")
+  .setDescription("Get mutagen points and rank for a wallet")
+  .addStringOption((option) =>
+    option
+      .setName("wallet")
+      .setDescription("The wallet address to check")
+      .setRequired(true)
+  );
 
 export async function handleMutagenCommand(
   interaction: ChatInputCommandInteraction

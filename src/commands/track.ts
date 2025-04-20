@@ -10,7 +10,7 @@ import { fetchPositions } from "../utils/api";
 import { formatters } from "../utils/formatters";
 import { PositionTracker } from "../services/positionTracker";
 
-export const data = new SlashCommandBuilder()
+export const command = new SlashCommandBuilder()
   .setName("track")
   .setDescription("Track a trader's position")
   .addStringOption((option) =>
@@ -30,9 +30,9 @@ export function formatEntryPrice(price: number, symbol: string): string {
   return formatters.usdValue(price.toString());
 }
 
-export async function handleTrackCommand(
+export const handleTrackCommand = async (
   interaction: ChatInputCommandInteraction
-) {
+) => {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   try {
@@ -118,4 +118,4 @@ export async function handleTrackCommand(
     console.error("Error in track command:", error);
     await interaction.editReply("Error fetching positions. Try again later.");
   }
-}
+};

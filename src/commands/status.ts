@@ -4,7 +4,7 @@ import { formatters } from '../utils/formatters';
 import { CONSTANTS } from '../utils/constants';
 import { formatEntryPrice } from './track';
 
-export const data = new SlashCommandBuilder()
+export const command = new SlashCommandBuilder()
     .setName('status')
     .setDescription('Check your tracked positions');
 

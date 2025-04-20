@@ -2,6 +2,7 @@ import {
   ChatInputCommandInteraction,
   MessageFlags,
   EmbedBuilder,
+  SlashCommandBuilder,
 } from "discord.js";
 import { readAdrenaAccount } from "../utils/solanaUtils";
 import { getNextStakingRoundStartTime } from "../utils/timeUtils";
@@ -10,6 +11,10 @@ import { formatters } from "../utils/formatters";
 import { CONSTANTS } from "../utils/constants";
 
 const STAKING_ACCOUNT = CONSTANTS.ACCOUNTS.STAKING;
+
+export const command = new SlashCommandBuilder()
+  .setName("rewards")
+  .setDescription("Check pending USDC rewards in the staking pool");
 
 export async function handleRewardsCommand(
   interaction: ChatInputCommandInteraction

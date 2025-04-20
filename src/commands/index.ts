@@ -1,19 +1,10 @@
-import { Client, SlashCommandBuilder, REST, Routes } from "discord.js";
-import { handlePriceCommand } from "./price";
-import { handleMutagenCommand } from "./mutagen";
-import { handleRewardsCommand } from "./rewards";
-import { handleTrackCommand } from "./track";
-import { handleStatusCommand } from "./status";
-import { handleUntrackCommand } from "./untrack";
-import { config } from "../config";
-import { 
-    ChatInputCommandInteraction, 
-    MessageFlags, 
-    StringSelectMenuBuilder,
-    ActionRowBuilder,
-    ComponentType,
-    Events
-} from 'discord.js';
+import { Client, REST, Routes, MessageFlags } from "discord.js";
+import * as price from "./price";
+import * as mutagen from "./mutagen";
+import * as rewards from "./rewards";
+import * as track from "./track";
+import * as status from "./status";
+import * as untrack from "./untrack";
 
 export async function setupCommands(client: Client) {
   if (!client.application) {
@@ -23,46 +14,12 @@ export async function setupCommands(client: Client) {
   console.log("Setting up commands...");
 
   const commands = [
-    new SlashCommandBuilder()
-      .setName("price")
-      .setDescription("Get the current price of a token")
-      .addStringOption((option) =>
-        option
-          .setName("token")
-          .setDescription("The token to check (ADX or ALP)")
-          .setRequired(true)
-          .addChoices(
-            { name: "ADX", value: "ADX" },
-            { name: "ALP", value: "ALP" }
-          )
-      ),
-    new SlashCommandBuilder()
-      .setName("mutagen")
-      .setDescription("Get mutagen points and rank for a wallet")
-      .addStringOption((option) =>
-        option
-          .setName("wallet")
-          .setDescription("The wallet address to check")
-          .setRequired(true)
-      ),
-    new SlashCommandBuilder()
-      .setName("rewards")
-      .setDescription("Check pending USDC rewards in the staking pool"),
-    new SlashCommandBuilder()
-      .setName("track")
-      .setDescription("Track a trader's position")
-      .addStringOption((option) =>
-        option
-          .setName("wallet")
-          .setDescription("Trader's wallet address")
-          .setRequired(true)
-      ),
-    new SlashCommandBuilder()
-      .setName("status")
-      .setDescription("Check your tracked positions"),
-    new SlashCommandBuilder()
-      .setName("untrack")
-      .setDescription("Stop tracking a position"),
+    price.command,
+    mutagen.command,
+    rewards.command,
+    track.command,
+    status.command,
+    untrack.command,
   ].map((command) => command.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
@@ -75,19 +32,17 @@ export async function setupCommands(client: Client) {
       body: commands,
     });
     console.log("Successfully reloaded application (/) commands:");
-    commands.forEach(cmd => {
+    commands.forEach((cmd) => {
       console.log(`- /${cmd.name}: ${cmd.description}`);
     });
   } catch (error) {
     console.error("Error registering commands:", error);
   }
 
-  // Set up command handlers
   client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName } = interaction;
-
     console.log(
       `${commandName} command used by ${interaction.user.tag} (${interaction.user.id})`
     );
@@ -95,34 +50,34 @@ export async function setupCommands(client: Client) {
     try {
       switch (commandName) {
         case "price":
-          await handlePriceCommand(interaction);
+          await price.handlePriceCommand(interaction);
           break;
         case "mutagen":
-          await handleMutagenCommand(interaction);
+          await mutagen.handleMutagenCommand(interaction);
           break;
         case "rewards":
-          await handleRewardsCommand(interaction);
+          await rewards.handleRewardsCommand(interaction);
           break;
         case "track":
-          await handleTrackCommand(interaction);
+          await track.handleTrackCommand(interaction);
           break;
         case "status":
-          await handleStatusCommand(interaction);
+          await status.handleStatusCommand(interaction);
           break;
         case "untrack":
-          await handleUntrackCommand(interaction);
+          await untrack.handleUntrackCommand(interaction);
           break;
         default:
           await interaction.reply({
             content: "Unknown command",
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           });
       }
     } catch (error) {
       console.error(`Error handling command ${commandName}:`, error);
       await interaction.reply({
         content: "There was an error executing this command!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   });
