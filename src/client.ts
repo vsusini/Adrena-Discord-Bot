@@ -2,6 +2,7 @@ import { Client, ClientOptions, GatewayIntentBits, Events } from "discord.js";
 import { setupCommands } from "./commands";
 import { StatusManager } from "./services/statusManager";
 import { RewardsManager } from "./services/rewardsManager";
+import { PositionTracker } from "./services/positionTracker";
 
 export class DiscordBot {
   private client: Client;
@@ -23,6 +24,11 @@ export class DiscordBot {
   }
 
   private initializeEventHandlers(): void {
+    this.client.once(Events.ClientReady, (client) => {
+      console.log(`Logged in as ${client.user?.tag}!`);
+      PositionTracker.getInstance(client);
+    });
+
     this.client.on(Events.ClientReady, async (client) => {
       try {
         console.log(`Logged in as ${client.user.tag}`);

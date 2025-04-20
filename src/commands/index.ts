@@ -2,6 +2,18 @@ import { Client, SlashCommandBuilder, REST, Routes } from "discord.js";
 import { handlePriceCommand } from "./price";
 import { handleMutagenCommand } from "./mutagen";
 import { handleRewardsCommand } from "./rewards";
+import { handleTrackCommand } from "./track";
+import { handleStatusCommand } from "./status";
+import { handleUntrackCommand } from "./untrack";
+import { config } from "../config";
+import { 
+    ChatInputCommandInteraction, 
+    MessageFlags, 
+    StringSelectMenuBuilder,
+    ActionRowBuilder,
+    ComponentType,
+    Events
+} from 'discord.js';
 
 export async function setupCommands(client: Client) {
   if (!client.application) {
@@ -36,16 +48,36 @@ export async function setupCommands(client: Client) {
     new SlashCommandBuilder()
       .setName("rewards")
       .setDescription("Check pending USDC rewards in the staking pool"),
+    new SlashCommandBuilder()
+      .setName("track")
+      .setDescription("Track a trader's position")
+      .addStringOption((option) =>
+        option
+          .setName("wallet")
+          .setDescription("Trader's wallet address")
+          .setRequired(true)
+      ),
+    new SlashCommandBuilder()
+      .setName("status")
+      .setDescription("Check your tracked positions"),
+    new SlashCommandBuilder()
+      .setName("untrack")
+      .setDescription("Stop tracking a position"),
   ].map((command) => command.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
   try {
     console.log("Started refreshing application (/) commands.");
+    // Global commands (can take up to 1 hour)
+    // Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID)
     await rest.put(Routes.applicationCommands(client.application.id), {
       body: commands,
     });
-    console.log("Successfully reloaded application (/) commands.");
+    console.log("Successfully reloaded application (/) commands:");
+    commands.forEach(cmd => {
+      console.log(`- /${cmd.name}: ${cmd.description}`);
+    });
   } catch (error) {
     console.error("Error registering commands:", error);
   }
@@ -57,7 +89,7 @@ export async function setupCommands(client: Client) {
     const { commandName } = interaction;
 
     console.log(
-      `Price command used by ${interaction.user.tag} (${interaction.user.id})`
+      `${commandName} command used by ${interaction.user.tag} (${interaction.user.id})`
     );
 
     try {
@@ -70,6 +102,15 @@ export async function setupCommands(client: Client) {
           break;
         case "rewards":
           await handleRewardsCommand(interaction);
+          break;
+        case "track":
+          await handleTrackCommand(interaction);
+          break;
+        case "status":
+          await handleStatusCommand(interaction);
+          break;
+        case "untrack":
+          await handleUntrackCommand(interaction);
           break;
         default:
           await interaction.reply({

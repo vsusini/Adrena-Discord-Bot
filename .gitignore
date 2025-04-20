@@ -38,3 +38,7 @@ coverage/
 
 # Optional eslint cache
 .eslintcache
+
+# Database and data files
+data/
+*.db

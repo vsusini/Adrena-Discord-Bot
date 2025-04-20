@@ -87,5 +87,20 @@ export interface AdrenaAccountData {
   summary?: StakingAccountSummary;
 }
 
+export interface Position {
+  position_id: number;
+  symbol: string;
+  side: 'long' | 'short';
+  status: 'open' | 'closed' | 'liquidated';
+  entry_price: number;
+  pubkey: string;
+  entry_leverage: number;
+}
+
+export interface PositionResponse {
+  success: boolean;
+  data: Position[];
+}
+
 type Accounts = IdlAccounts<AdrenaIdl>;
 export type UserStaking = Accounts["userStaking"];
