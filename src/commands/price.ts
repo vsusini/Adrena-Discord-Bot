@@ -2,11 +2,26 @@ import {
   ChatInputCommandInteraction,
   MessageFlags,
   EmbedBuilder,
+  SlashCommandBuilder,
 } from "discord.js";
 import { fetchTokenPrice } from "../utils/api";
 import { TokenType, CommandOption } from "../utils/types";
 import { config } from "../config";
 import { CONSTANTS } from "../utils/constants";
+
+export const command = new SlashCommandBuilder()
+  .setName("price")
+  .setDescription("Get the current price of a token")
+  .addStringOption((option) =>
+    option
+      .setName("token")
+      .setDescription("The token to check (ADX or ALP)")
+      .setRequired(true)
+      .addChoices(
+        { name: "ADX", value: "ADX" },
+        { name: "ALP", value: "ALP" }
+      )
+  );
 
 export async function handlePriceCommand(
   interaction: ChatInputCommandInteraction

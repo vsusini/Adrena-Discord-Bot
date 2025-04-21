@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { PositionResponse, Position } from './types';
+
 interface MutagenEntry {
   user_wallet: string;
   rank: number;
@@ -48,3 +51,29 @@ export async function fetchMutagenData(
 
   return { points, rank };
 }
+
+export const fetchPositions = async (wallet: string): Promise<Position[]> => {
+  try {
+    const response = await axios.get<PositionResponse>(
+      `https://datapi.adrena.xyz/position?user_wallet=${wallet}&status=open&limit=10`,
+      { headers: { accept: 'application/json' } }
+    );
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching positions:', error);
+    return [];
+  }
+};
+
+export const fetchPosition = async (positionId: number, wallet: string): Promise<Position | null> => {
+  try {
+    const response = await axios.get<PositionResponse>(
+      `https://datapi.adrena.xyz/position?position_id=${positionId}&user_wallet=${wallet}`,
+      { headers: { accept: 'application/json' } }
+    );
+    return response.data.data[0] || null;
+  } catch (error) {
+    console.error('Error fetching position:', error);
+    return null;
+  }
+};

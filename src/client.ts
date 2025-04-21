@@ -2,6 +2,7 @@ import { Client, ClientOptions, GatewayIntentBits, Events } from "discord.js";
 import { setupCommands } from "./commands";
 import { StatusManager } from "./services/statusManager";
 import { RewardsManager } from "./services/rewardsManager";
+import { PositionTracker } from "./services/positionTracker";
 
 export class DiscordBot {
   private client: Client;
@@ -23,28 +24,31 @@ export class DiscordBot {
   }
 
   private initializeEventHandlers(): void {
-    this.client.on(Events.ClientReady, async (client) => {
+    // Handle ready event
+    this.client.once(Events.ClientReady, async (client) => {
       try {
         console.log(`Logged in as ${client.user.tag}`);
 
-        // Initialize managers
-        console.log("Initializing managers...");
+        // Initialize trackers and managers
+        console.log("Initializing services...");
+        PositionTracker.getInstance(client);
         this.statusManager = new StatusManager(this.client);
         this.rewardsManager = new RewardsManager(this.client);
 
-        // Setup commands first
+        // Setup commands
         await setupCommands(this.client);
         console.log("Commands have been set up successfully");
 
-        // Start the update loops after everything else is ready
+        // Start update loops
         this.statusManager.startStatusLoop();
         this.rewardsManager.startRewardsLoop();
-        console.log("Status and rewards update loops started");
+        console.log("Services started successfully");
       } catch (error) {
         console.error("Error during initialization:", error);
       }
     });
 
+    // Handle errors
     this.client.on(Events.Error, (error) => {
       console.error("Discord client error:", error);
     });

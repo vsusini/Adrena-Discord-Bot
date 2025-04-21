@@ -1,7 +1,20 @@
-import { Client, SlashCommandBuilder, REST, Routes } from "discord.js";
-import { handlePriceCommand } from "./price";
-import { handleMutagenCommand } from "./mutagen";
-import { handleRewardsCommand } from "./rewards";
+import { Client, REST, Routes, MessageFlags } from "discord.js";
+import * as price from "./price";
+import * as mutagen from "./mutagen";
+import * as rewards from "./rewards";
+import * as track from "./track";
+import * as status from "./status";
+import * as untrack from "./untrack";
+
+// Create a map of command handlers
+const commandHandlers = {
+  [price.command.name]: price.handlePriceCommand,
+  [mutagen.command.name]: mutagen.handleMutagenCommand,
+  [rewards.command.name]: rewards.handleRewardsCommand,
+  [track.command.name]: track.handleTrackCommand,
+  [status.command.name]: status.handleStatusCommand,
+  [untrack.command.name]: untrack.handleUntrackCommand,
+} as const;
 
 export async function setupCommands(client: Client) {
   if (!client.application) {
@@ -11,80 +24,55 @@ export async function setupCommands(client: Client) {
   console.log("Setting up commands...");
 
   const commands = [
-    new SlashCommandBuilder()
-      .setName("price")
-      .setDescription("Get the current price of a token")
-      .addStringOption((option) =>
-        option
-          .setName("token")
-          .setDescription("The token to check (ADX or ALP)")
-          .setRequired(true)
-          .addChoices(
-            { name: "ADX", value: "ADX" },
-            { name: "ALP", value: "ALP" }
-          )
-      ),
-    new SlashCommandBuilder()
-      .setName("mutagen")
-      .setDescription("Get mutagen points and rank for a wallet")
-      .addStringOption((option) =>
-        option
-          .setName("wallet")
-          .setDescription("The wallet address to check")
-          .setRequired(true)
-      ),
-    new SlashCommandBuilder()
-      .setName("rewards")
-      .setDescription("Check pending USDC rewards in the staking pool"),
+    price.command,
+    mutagen.command,
+    rewards.command,
+    track.command,
+    status.command,
+    untrack.command,
   ].map((command) => command.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 
   try {
     console.log("Started refreshing application (/) commands.");
+    // Global commands (can take up to 1 hour)
+    // Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID)
     await rest.put(Routes.applicationCommands(client.application.id), {
       body: commands,
     });
-    console.log("Successfully reloaded application (/) commands.");
+    console.log("Successfully reloaded application (/) commands:");
+    commands.forEach((cmd) => {
+      console.log(`- /${cmd.name}: ${cmd.description}`);
+    });
   } catch (error) {
     console.error("Error registering commands:", error);
   }
 
-  // Set up command handlers
   client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName } = interaction;
-
     console.log(
-      `Price command used by ${interaction.user.tag} (${interaction.user.id})`
+      `${commandName} command used by ${interaction.user.tag} (${interaction.user.id})`
     );
 
     try {
-      switch (commandName) {
-        case "price":
-          await handlePriceCommand(interaction);
-          break;
-        case "mutagen":
-          await handleMutagenCommand(interaction);
-          break;
-        case "rewards":
-          await handleRewardsCommand(interaction);
-          break;
-        default:
-          await interaction.reply({
-            content: "Unknown command",
-            ephemeral: true,
-          });
+      const handler = commandHandlers[commandName];
+      if (handler) {
+        await handler(interaction);
+      } else {
+        await interaction.reply({
+          content: "Unknown command",
+          flags: MessageFlags.Ephemeral,
+        });
       }
     } catch (error) {
       console.error(`Error handling command ${commandName}:`, error);
       await interaction.reply({
         content: "There was an error executing this command!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   });
-
-  console.log("Commands setup completed");
 }

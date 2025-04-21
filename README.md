@@ -1,6 +1,13 @@
 # Adrena Discord Bot (TypeScript)
 
-A Discord bot that tracks token prices, staking rewards, and wallet balances for the Adrena ecosystem on Solana.
+A Discord bot that tracks token prices, staking rewards, and trading positions for the Adrena ecosystem on Solana.
+
+# Adrena Links:
+
+- Website: https://app.adrena.xyz/
+- X: https://x.com/AdrenaProtocol
+- Discord: https://discord.gg/Z3UZAVA2ch
+- Docs: https://docs.adrena.xyz/
 
 ## Features
 
@@ -8,6 +15,9 @@ A Discord bot that tracks token prices, staking rewards, and wallet balances for
 - Staking rewards monitoring and notifications
 - Mutagen points tracking and leaderboard rank display
 - Automated round-end notifications for staking rewards
+- Position tracking with status updates
+- Multi-user position tracking support
+- Persistent storage using SQLite database
 - Embedded message formatting with Discord Markdown
 
 ## Commands
@@ -19,7 +29,14 @@ A Discord bot that tracks token prices, staking rewards, and wallet balances for
   - Parameters: `wallet` - Solana wallet address
   - Response: Total points and global rank in formatted embed (ephemeral)
 - `/rewards` - Check staking rewards
-  - Response: Current pending USDC rewards and time remaining using Discord timestamps (ephemeral)
+  - Response: Current pending USDC rewards and time remaining (ephemeral)
+- `/position-track <wallet>` - Track a trader's positions
+  - Parameters: `wallet` - Trader's wallet address
+  - Response: Interactive menu to select positions to track (ephemeral)
+- `/position-status` - Check your tracked positions
+  - Response: List of all positions you're tracking with details (ephemeral)
+- `/position-untrack` - Stop tracking a position
+  - Response: Interactive menu to select position to untrack (ephemeral)
 
 ## Prerequisites
 
@@ -63,8 +80,21 @@ export const config = {
   REWARDS_CHECK_INTERVAL: 60,     // How often to check rewards (seconds)
   REWARDS_NOTIFICATION_THRESHOLD: 21600, // When to notify before round end (6 hours in seconds)
   REWARDS_NOTIFICATION_CHANNEL: "channel_id", // Channel ID for notifications
+
+  // Position Tracking Settings
+  POSITION_CHECK_INTERVAL: 60,    // How often to check positions (seconds)
+  POSITION_NOTIFICATION_CHANNEL: "channel_id" // Channel ID for position updates
 } as const;
 ```
+
+The config file controls various aspects of the bot's behavior:
+- Price updates and formatting
+- Status refresh intervals
+- Discord server settings
+- Staking rewards notifications
+- Position tracking notifications
+
+Make sure to replace `guild_id` and `channel_id` with your actual Discord server and channel IDs.
 
 ## Development
 
@@ -93,13 +123,18 @@ npm start
 src/
 ├── commands/                  # Discord command implementations
 │   ├── index.ts             # Command registration and routing
-│   ├── price.ts             # Price checking command handler
-│   ├── mutagen.ts           # Mutagen points/rank command handler
-│   └── rewards.ts           # Staking rewards command handler
+│   ├── price.ts             # Price checking command
+│   ├── mutagen.ts           # Mutagen points/rank command
+│   ├── rewards.ts           # Staking rewards command
+│   ├── track.ts            # Position tracking command
+│   ├── status.ts           # Position status command
+│   └── untrack.ts          # Position untracking command
 │
 ├── services/                 # Core background services
 │   ├── statusManager.ts     # Handles bot status/price updates
-│   └── rewardsManager.ts    # Manages staking rewards notifications
+│   ├── rewardsManager.ts    # Manages staking rewards notifications
+│   ├── positionTracker.ts   # Tracks trading positions
+│   └── database.ts         # SQLite database service
 │
 ├── utils/                    # Shared utility functions
 │   ├── api.ts              # External API interaction functions
@@ -115,16 +150,6 @@ src/
 └── index.ts                 # Application entry point
 ```
 
-### Testing Structure
-```
-tests/
-├── utils/                    # Utility function tests
-│   ├── formatters.test.ts   # Tests for value formatting
-│   └── timeUtils.test.ts    # Tests for time calculations
-│
-└── commands/                 # Command handler tests
-```
-
 ## Testing
 
 The project uses Jest for testing. Test files are located in the `tests` directory:
@@ -138,15 +163,10 @@ tests/
     └── price.test.ts         # Tests for price command
 ```
 
-Run tests with coverage:
-```bash
-npm test -- --coverage
-```
-
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Add tests for new features
+3. Add new features
 4. Ensure all tests pass
 5. Open a pull request
