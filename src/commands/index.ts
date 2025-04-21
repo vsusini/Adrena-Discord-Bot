@@ -6,6 +6,16 @@ import * as track from "./track";
 import * as status from "./status";
 import * as untrack from "./untrack";
 
+// Create a map of command handlers
+const commandHandlers = {
+  [price.command.name]: price.handlePriceCommand,
+  [mutagen.command.name]: mutagen.handleMutagenCommand,
+  [rewards.command.name]: rewards.handleRewardsCommand,
+  [track.command.name]: track.handleTrackCommand,
+  [status.command.name]: status.handleStatusCommand,
+  [untrack.command.name]: untrack.handleUntrackCommand,
+} as const;
+
 export async function setupCommands(client: Client) {
   if (!client.application) {
     throw new Error("Client application is not ready");
@@ -48,30 +58,14 @@ export async function setupCommands(client: Client) {
     );
 
     try {
-      switch (commandName) {
-        case "price":
-          await price.handlePriceCommand(interaction);
-          break;
-        case "mutagen":
-          await mutagen.handleMutagenCommand(interaction);
-          break;
-        case "rewards":
-          await rewards.handleRewardsCommand(interaction);
-          break;
-        case "track":
-          await track.handleTrackCommand(interaction);
-          break;
-        case "status":
-          await status.handleStatusCommand(interaction);
-          break;
-        case "untrack":
-          await untrack.handleUntrackCommand(interaction);
-          break;
-        default:
-          await interaction.reply({
-            content: "Unknown command",
-            flags: MessageFlags.Ephemeral,
-          });
+      const handler = commandHandlers[commandName];
+      if (handler) {
+        await handler(interaction);
+      } else {
+        await interaction.reply({
+          content: "Unknown command",
+          flags: MessageFlags.Ephemeral,
+        });
       }
     } catch (error) {
       console.error(`Error handling command ${commandName}:`, error);
@@ -81,6 +75,4 @@ export async function setupCommands(client: Client) {
       });
     }
   });
-
-  console.log("Commands setup completed");
 }

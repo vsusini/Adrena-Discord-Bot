@@ -11,7 +11,7 @@ import { formatters } from "../utils/formatters";
 import { PositionTracker } from "../services/positionTracker";
 
 export const command = new SlashCommandBuilder()
-  .setName("track")
+  .setName("position-track")
   .setDescription("Track a trader's position")
   .addStringOption((option) =>
     option
@@ -96,7 +96,7 @@ export const handleTrackCommand = async (
               symbol
             )}`
           : `You are already tracking this position`,
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
 
       // Remove the select menu after selection

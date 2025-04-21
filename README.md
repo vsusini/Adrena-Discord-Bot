@@ -2,6 +2,13 @@
 
 A Discord bot that tracks token prices, staking rewards, and trading positions for the Adrena ecosystem on Solana.
 
+# Adrena Links:
+
+- Website: https://app.adrena.xyz/
+- X: https://x.com/AdrenaProtocol
+- Discord: https://discord.gg/Z3UZAVA2ch
+- Docs: https://docs.adrena.xyz/
+
 ## Features
 
 - Real-time token price tracking for ADX tokens
@@ -23,12 +30,12 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
   - Response: Total points and global rank in formatted embed (ephemeral)
 - `/rewards` - Check staking rewards
   - Response: Current pending USDC rewards and time remaining (ephemeral)
-- `/track <wallet>` - Track a trader's positions
+- `/position-track <wallet>` - Track a trader's positions
   - Parameters: `wallet` - Trader's wallet address
   - Response: Interactive menu to select positions to track (ephemeral)
-- `/status` - Check your tracked positions
+- `/position-status` - Check your tracked positions
   - Response: List of all positions you're tracking with details (ephemeral)
-- `/untrack` - Stop tracking a position
+- `/position-untrack` - Stop tracking a position
   - Response: Interactive menu to select position to untrack (ephemeral)
 
 ## Prerequisites
@@ -154,11 +161,6 @@ tests/
 │   └── timeUtils.test.ts     # Tests for time calculations
 └── commands/
     └── price.test.ts         # Tests for price command
-```
-
-Run tests with coverage:
-```bash
-npm test -- --coverage
 ```
 
 ## Contributing
