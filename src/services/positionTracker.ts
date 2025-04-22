@@ -1,9 +1,11 @@
-import { Client, TextChannel } from "discord.js";
+import { Client, TextChannel, EmbedBuilder, Colors } from "discord.js";
 import { fetchPosition } from "../utils/api";
 import { config } from "../config";
 import { formatters } from "../utils/formatters";
 import { formatEntryPrice } from "../commands/track";
 import { DatabaseService } from "./database";
+import { DetailedPosition } from "../utils/types";
+import { CONSTANTS } from "../utils/constants";
 
 interface TrackedPosition {
   positionId: number;
@@ -82,6 +84,61 @@ export class PositionTracker {
     return channel;
   }
 
+  private async sendPositionUpdate(
+    notificationChannel: TextChannel,
+    tracked: TrackedPosition,
+    position: DetailedPosition
+  ): Promise<void> {
+    const userMentions = Array.from(tracked.userIds)
+      .map((id) => `<@${id}>`)
+      .join(" ");
+
+    const title =
+      "[" +
+      position.symbol +
+      " - " +
+      position.side.toUpperCase() +
+      "] " +
+      position.status.charAt(0).toUpperCase() +
+      position.status.slice(1) +
+      "d at `$" +
+      formatEntryPrice(position.exit_price ?? 0, position.symbol) +
+      "`";
+
+    const embed = new EmbedBuilder()
+      .setColor(CONSTANTS.COLORS.PRIMARY)
+      .setTitle(title)
+      .setDescription(
+        [
+          `🔗 Trader: [\`${formatters.walletAddress(
+            tracked.wallet
+          )}\`](https://explorer.solana.com/address/${tracked.wallet})`,
+          `💰 Entry: \`$${formatEntryPrice(
+            tracked.entry_price,
+            position.symbol
+          )}\``,
+          position.status === "close" || position.status === "liquidate"
+            ? `📊 Exit: \`$${formatEntryPrice(
+                position.exit_price || 0,
+                position.symbol
+              )}\`` +
+              `\n💵 PnL: \`$${
+                position.pnl !== undefined
+                  ? `${position.pnl > 0 ? "+" : ""}${position.pnl.toFixed(2)}`
+                  : "0.00"
+              }\``
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n")
+      );
+
+    await notificationChannel.send({
+      content: userMentions,
+      embeds: [embed],
+    });
+  }
+
   private async checkPositions() {
     try {
       const notificationChannel = await this.getNotificationChannel();
@@ -112,28 +169,16 @@ export class PositionTracker {
           );
 
           if (position.status !== tracked.lastStatus) {
-            const userMentions = Array.from(tracked.userIds)
-              .map((id) => `<@${id}>`)
-              .join(" ");
-
             console.log(
               `Status changed for position ${
                 tracked.positionId
               }. Notifying users: ${Array.from(tracked.userIds).join(", ")}`
             );
 
-            await notificationChannel.send(
-              `${userMentions}\n` +
-                `Position Update: ${
-                  position.symbol
-                } ${position.side.toUpperCase()} status has been changed to ${
-                  position.status
-                }\n` +
-                `🔗 Trader: \`${formatters.walletAddress(tracked.wallet)}\`\n` +
-                `💰 Entry: \`$${formatEntryPrice(
-                  tracked.entry_price,
-                  position.symbol
-                )}\``
+            await this.sendPositionUpdate(
+              notificationChannel,
+              tracked,
+              position
             );
 
             if (position.status !== "open") {

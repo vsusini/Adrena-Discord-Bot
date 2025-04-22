@@ -34,7 +34,9 @@ export async function handleStatusCommand(
         userPositions.map((pos) => ({
           name: `${pos.symbol} ${pos.side.toUpperCase()}`,
           value: [
-            `Wallet: \`${formatters.walletAddress(pos.wallet)}\``,
+            `Wallet: [\`${formatters.walletAddress(
+              pos.wallet
+            )}\`](https://explorer.solana.com/address/${pos.wallet})`,
             `Entry: \`$${formatEntryPrice(pos.entry_price, pos.symbol)}\``,
             `Leverage: \`${pos.entry_leverage}x\``,
             `Tracked By: ${pos.userIds.size} ${

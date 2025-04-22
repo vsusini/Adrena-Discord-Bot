@@ -91,10 +91,17 @@ export interface Position {
   position_id: number;
   symbol: string;
   side: 'long' | 'short';
-  status: 'open' | 'closed' | 'liquidated';
+  status: 'open' | 'close' | 'liquidate';
   entry_price: number;
   pubkey: string;
   entry_leverage: number;
+}
+
+export interface DetailedPosition extends Position {
+  exit_price?: number;
+  pnl?: number;
+  entry_size?: number;
+  exit_size?: number;
 }
 
 export interface PositionResponse {

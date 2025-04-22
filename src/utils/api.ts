@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { PositionResponse, Position } from './types';
+import { PositionResponse, Position, DetailedPosition } from './types';
 
 interface MutagenEntry {
   user_wallet: string;
@@ -65,10 +65,10 @@ export const fetchPositions = async (wallet: string): Promise<Position[]> => {
   }
 };
 
-export const fetchPosition = async (positionId: number, wallet: string): Promise<Position | null> => {
+export const fetchPosition = async (positionId: number, wallet: string): Promise<DetailedPosition | null> => {
   try {
     const response = await axios.get<PositionResponse>(
-      `https://datapi.adrena.xyz/position?position_id=${positionId}&user_wallet=${wallet}`,
+      `https://datapi.adrena.xyz/position?position_id=${positionId}&user_wallet=${wallet}&limit=1`,
       { headers: { accept: 'application/json' } }
     );
     return response.data.data[0] || null;
