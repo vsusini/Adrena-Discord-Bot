@@ -49,7 +49,7 @@ export async function handlePriceCommand(
       if (isNaN(numericPrice)) {
         throw new Error("Invalid price format received");
       }
-      const formattedPrice = numericPrice.toFixed(config.PRICE_DECIMAL_PLACES);
+      const formattedPrice = numericPrice.toFixed(4);
       console.log(`Successfully fetched ${token} price: $${formattedPrice}`);
 
       const embed = new EmbedBuilder()

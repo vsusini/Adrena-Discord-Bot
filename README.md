@@ -68,7 +68,7 @@ DISCORD_TOKEN=your_token_here
 ```typescript
 export const config = {
   // Price Display Settings
-  PRICE_DECIMAL_PLACES: 4,        // Number of decimal places for price display
+  PRICE_DECIMAL_PLACES: 2,        // Number of decimal places for price display
   
   // Status Update Settings
   UPDATE_INTERVAL: 60,            // Bot status update interval (seconds)
