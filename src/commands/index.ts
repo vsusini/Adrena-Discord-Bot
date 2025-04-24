@@ -5,6 +5,7 @@ import * as rewards from "./rewards";
 import * as track from "./track";
 import * as status from "./status";
 import * as untrack from "./untrack";
+import * as help from "./help";
 
 // Create a map of command handlers
 const commandHandlers = {
@@ -14,6 +15,7 @@ const commandHandlers = {
   [track.command.name]: track.handleTrackCommand,
   [status.command.name]: status.handleStatusCommand,
   [untrack.command.name]: untrack.handleUntrackCommand,
+  [help.command.name]: help.handleHelpCommand,
 } as const;
 
 export async function setupCommands(client: Client) {
@@ -30,6 +32,7 @@ export async function setupCommands(client: Client) {
     track.command,
     status.command,
     untrack.command,
+    help.command,
   ].map((command) => command.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);

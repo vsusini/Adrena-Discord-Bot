@@ -22,8 +22,10 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
 
 ## Commands
 
+- `/help` – Display all available bot commands and usage
+  - Response: Embedded list of all bot commands pulled from the README (ephemeral)
 - `/price` - Get current token price
-  - Options: `ADX Token`
+  - Options: `ADX Token` or `ALP Token`
   - Response: Current price in USD with 4 decimal places (ephemeral)
 - `/mutagen <wallet>` - Get mutagen points and rank
   - Parameters: `wallet` - Solana wallet address
