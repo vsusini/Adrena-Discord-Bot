@@ -68,12 +68,8 @@ function extractMarkdownSection(
 // Format Markdown to inline Discord-safe plaintext (basic)
 function formatMarkdown(md: string): string {
   return md
-    // .replace(/```.*?\n([\s\S]*?)```/g, (_, code) => `\`\`\`\n${code}\n\`\`\``) // code blocks
-    // .replace(/\/(\w+)/g, "`/$1`") // slash commands
-    // .replace(/<.*?>/g, "") // remove parameters like <wallet>
-    // .replace(/[*_`]/g, "") // remove other markdown
     .replace("## Commands", "") // removes the "## Commands" heading
-    .replace(/^\s*\n/gm, "") // removes empty lines if needed (optional cleanup)
+    .replace(/^\s*\n/gm, "") // removes empty lines
     .trim()
     .slice(0, 1024); // Discord embed field limit
 }
