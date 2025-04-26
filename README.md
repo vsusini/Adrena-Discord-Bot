@@ -21,7 +21,8 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
 - Embedded message formatting with Discord Markdown
 
 ## Commands
-
+- `/tutorial` - Guide on how to set up position tracking
+  - Response: Step-by-step tutorial with images to help configure position tracking
 - `/help` – Display all available bot commands and usage
   - Response: Embedded list of all bot commands pulled from the README (ephemeral)
 - `/price` - Get current token price
