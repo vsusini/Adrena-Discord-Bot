@@ -19,6 +19,24 @@ export async function fetchTokenPrice(token: string): Promise<number | null> {
   return data.success ? data.data[token.toLowerCase()].price : null;
 }
 
+export async function fetchTokenPrices(): Promise<{ adx: number | null; alp: number | null }> {
+  const response = await fetch(`https://datapi.adrena.xyz/last-price`);
+  
+  if (!response.ok) {
+    console.error("Failed to fetch token prices:", response.statusText);
+    return { adx: null, alp: null };
+  }
+
+  const data = await response.json();
+  
+  return data.success
+    ? {
+        adx: data.data["adx"]?.price ?? null,
+        alp: data.data["alp"]?.price ?? null,
+      }
+    : { adx: null, alp: null };
+}
+
 export async function fetchMutagenData(
   walletAddress: string
 ): Promise<{ points: number | null; rank: number | null }> {

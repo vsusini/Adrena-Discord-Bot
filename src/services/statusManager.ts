@@ -1,5 +1,5 @@
 import { Client, ActivityType } from "discord.js";
-import { fetchTokenPrice } from "../utils/api";
+import { fetchTokenPrice, fetchTokenPrices } from "../utils/api";
 import { TokenType } from "../utils/types";
 import { config } from "../config";
 
@@ -16,13 +16,18 @@ export class StatusManager {
     this.updateInterval = null;
   }
 
-  async updateBotStatus(token: TokenType): Promise<void> {
+  async updateBotStatus(): Promise<void> {
     try {
-      console.log(`Attempting to update status for ${token}...`);
-      const price = await fetchTokenPrice(token);
+      console.log(`Attempting to update status...`);
+      const prices = await fetchTokenPrices();
 
-      if (price !== null && this.client.user) {
-        const formattedPrice = `$${Number(price).toFixed(4)}`;
+      if (prices !== null && this.client.user) {
+        const adxPrice =
+          prices.adx !== null ? `$${Number(prices.adx).toFixed(4)}` : "N/A";
+        const alpPrice =
+          prices.alp !== null ? `$${Number(prices.alp).toFixed(4)}` : "N/A";
+
+        const formattedPrice = `ADX ${adxPrice} / ALP ${alpPrice}`;
 
         // Update nickname in all guilds
         for (const guild of this.client.guilds.cache.values()) {
@@ -40,7 +45,7 @@ export class StatusManager {
         }
 
         // Keep the existing watching status
-        const status = `${token} Price`;
+        const status = `Tracking ADX and ALP`;
         await this.client.user.setActivity(status, {
           type: ActivityType.Watching,
         });
@@ -49,10 +54,10 @@ export class StatusManager {
           `Nickname and status updated successfully: ${formattedPrice} | ${status}`
         );
       } else {
-        console.error(`Failed to update status for ${token}`);
+        console.error(`Failed to update status`);
       }
     } catch (error) {
-      console.error(`Error updating ${token} status:`, error);
+      console.error(`Error updating status:`, error);
     }
   }
 
@@ -65,13 +70,13 @@ export class StatusManager {
     }
 
     // Immediate first update
-    this.updateBotStatus(this.tokens[this.currentTokenIndex]);
+    this.updateBotStatus();
 
     // Set up the interval
     this.updateInterval = setInterval(() => {
       this.currentTokenIndex =
         (this.currentTokenIndex + 1) % this.tokens.length;
-      this.updateBotStatus(this.tokens[this.currentTokenIndex]);
+      this.updateBotStatus();
     }, config.UPDATE_INTERVAL * 1000);
 
     console.log(
