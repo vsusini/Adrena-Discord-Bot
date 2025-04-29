@@ -5,13 +5,11 @@ import { config } from "../config";
 
 export class StatusManager {
   private client: Client;
-  private currentTokenIndex: number;
   private readonly tokens: TokenType[];
   private updateInterval: NodeJS.Timeout | null;
 
   constructor(client: Client) {
     this.client = client;
-    this.currentTokenIndex = 0;
     this.tokens = ["ADX", "ALP"];
     this.updateInterval = null;
   }
@@ -74,8 +72,6 @@ export class StatusManager {
 
     // Set up the interval
     this.updateInterval = setInterval(() => {
-      this.currentTokenIndex =
-        (this.currentTokenIndex + 1) % this.tokens.length;
       this.updateBotStatus();
     }, config.UPDATE_INTERVAL * 1000);
 
