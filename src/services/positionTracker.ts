@@ -124,7 +124,7 @@ export class PositionTracker {
               )}\`` +
               `\n💵 PnL: \`$${
                 position.pnl !== undefined
-                  ? `${position.pnl > 0 ? "+" : ""}${position.pnl.toFixed(2)}`
+                  ? `${position.pnl > 0 ? "+" : ""}${formatEntryPrice(position.pnl, position.symbol)}`
                   : "0.00"
               }\``
             : "",
