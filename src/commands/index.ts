@@ -7,6 +7,7 @@ import * as status from "./status";
 import * as untrack from "./untrack";
 import * as help from "./help";
 import * as tutorial from "./tutorial";
+import * as tip from "./tip";
 import { config } from "../config";
 
 // Create a map of command handlers
@@ -19,6 +20,7 @@ const commandHandlers = {
   [untrack.command.name]: untrack.handleUntrackCommand,
   [help.command.name]: help.handleHelpCommand,
   [tutorial.command.name]: tutorial.handleTutorialCommand,
+  [tip.command.name]: tip.handleTipCommand,
 } as const;
 
 export async function setupCommands(client: Client) {
@@ -37,6 +39,7 @@ export async function setupCommands(client: Client) {
     untrack.command,
     help.command,
     tutorial.command,
+    tip.command,
   ].map((command) => command.toJSON());
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
