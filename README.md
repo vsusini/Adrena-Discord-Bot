@@ -27,6 +27,8 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
   - Response: Embedded list of all bot commands pulled from the README (ephemeral)
 - `/price` - Get Adrena token prices and liquidity
   - Response: Get the current prices and liquidity for ADX, ALP, SOL, WBTC, and BONK (ephemeral)
+- `/liquidity` - View the latest locked and available liquidity by token
+  - Response: Embedded snapshot showing remaining liquidity (in USD) and locked % for BTC, BONK, SOL, and USDC, based on the latest custody data
 - `/mutagen <wallet>` - Get mutagen points and rank
   - Parameters: `wallet` - Solana wallet address
   - Response: Total points and global rank in formatted embed (ephemeral)

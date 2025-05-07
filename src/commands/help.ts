@@ -69,6 +69,7 @@ function extractMarkdownSection(
 function formatMarkdown(md: string): string {
   return md
     .replace("## Commands", "") // removes the "## Commands" heading
+    .replace(/- Response:.*$/gm, "") // Remove all lines starting with "- Response:"
     .replace(/^\s*\n/gm, "") // removes empty lines
     .trim()
     .slice(0, 1024); // Discord embed field limit
