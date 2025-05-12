@@ -25,9 +25,10 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
   - Response: Step-by-step tutorial with images to help configure position tracking
 - `/help` – Display all available bot commands and usage
   - Response: Embedded list of all bot commands pulled from the README (ephemeral)
-- `/price` - Get current token price
-  - Options: `ADX Token` or `ALP Token`
-  - Response: Current price in USD with 4 decimal places (ephemeral)
+- `/price` - Get Adrena token prices and liquidity
+  - Response: Get the current prices and liquidity for ADX, ALP, SOL, WBTC, and BONK (ephemeral)
+- `/liquidity` - View the latest locked and available liquidity by token
+  - Response: Embedded snapshot showing remaining liquidity (in USD) and locked % for BTC, BONK, SOL, and USDC, based on the latest custody data
 - `/mutagen <wallet>` - Get mutagen points and rank
   - Parameters: `wallet` - Solana wallet address
   - Response: Total points and global rank in formatted embed (ephemeral)
@@ -65,6 +66,7 @@ npm install
 3. Create a `.env` file with your Discord bot token:
 ```env
 DISCORD_TOKEN=your_token_here
+BIRDEYE_TOKEN=your_token_here
 ```
 
 4. Configure settings in `src/config.ts`:
