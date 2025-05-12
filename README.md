@@ -32,10 +32,12 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
 - `/mutagen <wallet>` - Get mutagen points and rank
   - Parameters: `wallet` - Solana wallet address
   - Response: Total points and global rank in formatted embed (ephemeral)
+- `/tip` - Support the bot by sending a tip
+  - Response: Display the ADX tip address with embed formatting (ephemeral)
 - `/rewards` - Check staking rewards
   - Response: Current pending USDC rewards and time remaining (ephemeral)
 - `/position-track <wallet>` - Track a trader's positions
-  - Parameters: `wallet` - Trader's wallet address
+  - Parameters: `wallet` - Solana wallet address
   - Response: Interactive menu to select positions to track (ephemeral)
 - `/position-status` - Check your tracked positions
   - Response: List of all positions you're tracking with details (ephemeral)
