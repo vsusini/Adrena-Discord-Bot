@@ -7,6 +7,7 @@ import * as status from "./status";
 import * as untrack from "./untrack";
 import * as help from "./help";
 import * as tutorial from "./tutorial";
+import * as tip from "./tip";
 import * as liquidity from "./liquidity";
 import { config } from "../config";
 
@@ -20,6 +21,7 @@ const commandHandlers = {
   [untrack.command.name]: untrack.handleUntrackCommand,
   [help.command.name]: help.handleHelpCommand,
   [tutorial.command.name]: tutorial.handleTutorialCommand,
+  [tip.command.name]: tip.handleTipCommand,
   [liquidity.command.name]: liquidity.handleLiquidityCommand,
 } as const;
 
@@ -39,13 +41,11 @@ export async function setupCommands(client: Client) {
     untrack.command,
     help.command,
     tutorial.command,
+    tip.command,
     liquidity.command,
   ].map((command) => command.toJSON());
-
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
-
   try {
-    console.log("Started refreshing application (/) commands.");
     // Global commands (can take up to 1 hour) with our a guild ID 
     // await rest.put(Routes.applicationGuildCommands(client.application.id, config.DEFAULT_GUILD_ID), {
     await rest.put(Routes.applicationCommands(client.application.id), {
