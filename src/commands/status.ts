@@ -38,6 +38,7 @@ export async function handleStatusCommand(
               pos.wallet
             )}\`](https://explorer.solana.com/address/${pos.wallet})`,
             `Entry: \`$${formatEntryPrice(pos.entry_price, pos.symbol)}\``,
+            `Size: \`$${formatters.usdValue(pos?.size?.toString() || 0)}\``,
             `Leverage: \`${pos.entry_leverage}x\``,
             `Tracked By: ${pos.userIds.size} ${
               pos.userIds.size === 1 ? "user" : "users"

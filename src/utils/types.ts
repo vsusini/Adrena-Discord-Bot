@@ -95,12 +95,13 @@ export interface Position {
   entry_price: number;
   pubkey: string;
   entry_leverage: number;
+  entry_size: number;
+  increase_size: number;
 }
 
 export interface DetailedPosition extends Position {
   exit_price?: number;
   pnl?: number;
-  entry_size?: number;
   exit_size?: number;
 }
 

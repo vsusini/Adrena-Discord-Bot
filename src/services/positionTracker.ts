@@ -16,6 +16,7 @@ interface TrackedPosition {
   side: string;
   entry_price: number;
   entry_leverage: number;
+  size: number;
 }
 
 export class PositionTracker {
@@ -40,24 +41,17 @@ export class PositionTracker {
     return PositionTracker.instance;
   }
 
-  addPosition(
-    positionId: number,
-    wallet: string,
-    userId: string,
-    symbol: string,
-    side: string,
-    entry_price: number,
-    entry_leverage: number
-  ): boolean {
-    return this.db.addPosition({
-      positionId,
-      wallet,
-      symbol,
-      side,
-      entry_price,
-      entry_leverage,
-      userId,
-    });
+  addPosition(position: {
+    positionId: number;
+    wallet: string;
+    symbol: string;
+    side: string;
+    entry_price: number;
+    entry_leverage: number;
+    userId: string;
+    size: number;
+  }): boolean {
+    return this.db.addPosition(position);
   }
 
   removeUserFromPosition(positionId: number, userId: string): boolean {
@@ -117,6 +111,7 @@ export class PositionTracker {
             tracked.entry_price,
             position.symbol
           )}\``,
+          `📈 Size: \`$${formatters.usdValue(tracked?.size?.toString() || 0)}\``,
           position.status === "close" || position.status === "liquidate"
             ? `📊 Exit: \`$${formatEntryPrice(
                 position.exit_price || 0,

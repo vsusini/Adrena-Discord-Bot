@@ -10,6 +10,7 @@ interface Position {
   entry_leverage: number;
   lastStatus: string;
   userIds: Set<string>;
+  size: number;
 }
 
 export class DatabaseService {
@@ -38,7 +39,8 @@ export class DatabaseService {
                 side TEXT NOT NULL,
                 entry_price REAL NOT NULL,
                 entry_leverage REAL NOT NULL,
-                last_status TEXT DEFAULT 'open'
+                last_status TEXT DEFAULT 'open',
+                size REAL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS user_positions (
@@ -58,11 +60,12 @@ export class DatabaseService {
     entry_price: number;
     entry_leverage: number;
     userId: string;
+    size: number;
   }): boolean {
     const insertPosition = this.db.prepare(`
             INSERT OR IGNORE INTO positions 
-            (position_id, wallet, symbol, side, entry_price, entry_leverage)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (position_id, wallet, symbol, side, entry_price, entry_leverage, size)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
 
     const insertUserPosition = this.db.prepare(`
@@ -77,7 +80,8 @@ export class DatabaseService {
         position.symbol,
         position.side,
         position.entry_price,
-        position.entry_leverage
+        position.entry_leverage,
+        position.size
       );
       insertUserPosition.run(position.userId, position.positionId);
     });
@@ -110,6 +114,7 @@ export class DatabaseService {
       entry_leverage: number;
       last_status: string;
       user_ids: string | null;
+      size: number;
     }>;
     return positions.map((row) => ({
       positionId: row.position_id,
@@ -120,6 +125,7 @@ export class DatabaseService {
       entry_leverage: row.entry_leverage,
       lastStatus: row.last_status,
       userIds: new Set(row.user_ids ? row.user_ids.split(",") : []),
+      size: row.size,
     }));
   }
 
@@ -199,6 +205,7 @@ export class DatabaseService {
       entry_leverage: number;
       last_status: string;
       user_ids: string | null;
+      size: number;
     }>;
     return positions.map((row) => ({
       positionId: row.position_id,
@@ -209,6 +216,7 @@ export class DatabaseService {
       entry_leverage: row.entry_leverage,
       lastStatus: row.last_status,
       userIds: new Set(row.user_ids ? row.user_ids.split(",") : []),
+      size: row.size,
     }));
   }
 }

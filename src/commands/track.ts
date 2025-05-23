@@ -53,7 +53,7 @@ export const handleTrackCommand = async (
           description: `Entry: $${formatEntryPrice(
             pos.entry_price,
             pos.symbol
-          )} | Leverage: ${pos.entry_leverage}x`,
+          )} | Size: $${formatters.usdValue(pos.entry_size + (pos.increase_size || 0))} | Leverage: ${pos.entry_leverage}x`,
           value: `${pos.position_id}:${wallet}:${pos.symbol}:${pos.side}:${pos.entry_price}:${pos.entry_leverage}`,
         }))
       );
@@ -79,15 +79,27 @@ export const handleTrackCommand = async (
         selectInteraction.values[0].split(":");
       const tracker = PositionTracker.getInstance();
 
-      const success = tracker.addPosition(
-        parseInt(id),
+      const position = positions.find(p => p.position_id === parseInt(id));
+      if (!position) {
+        await selectInteraction.reply({
+          content: "Position not found",
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+
+      const totalSize = position.entry_size + (position.increase_size || 0);
+
+      const success = tracker.addPosition({
+        positionId: parseInt(id),
         wallet,
-        interaction.user.id,
+        userId: interaction.user.id,
         symbol,
         side,
-        parseFloat(entry_price),
-        parseFloat(entry_leverage)
-      );
+        entry_price: parseFloat(entry_price),
+        entry_leverage: parseFloat(entry_leverage),
+        size: totalSize,
+      });
 
       await selectInteraction.reply({
         content: success
