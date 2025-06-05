@@ -10,10 +10,20 @@ export class RewardsManager {
   private client: Client;
   private updateInterval: NodeJS.Timeout | null;
   private readonly STAKING_ACCOUNT = CONSTANTS.ACCOUNTS.STAKING;
+  private lastNotificationTime: number = 0; 
 
   constructor(client: Client) {
     this.client = client;
     this.updateInterval = null;
+  }
+
+  private hasRecentlyNotified(): boolean {
+    const lastNotification = this.lastNotificationTime;
+    if (!lastNotification) return false;
+
+    // Check if last notification was within the last hour
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    return lastNotification > oneHourAgo;
   }
 
   async checkAndNotifyRewards(): Promise<void> {
@@ -37,8 +47,6 @@ export class RewardsManager {
           percentageStaked,
         } = accountData.summary;
 
-        const formattedRewards = formatters.usdValue(pendingUsdcRewards);
-        const formattedTotalStaked = formatters.usdValue(totalStaked);
         const nextRoundTime =
           getNextStakingRoundStartTime(
             new BN(
@@ -49,12 +57,14 @@ export class RewardsManager {
           ).getTime() / 1000;
         const timeRemaining = nextRoundTime * 1000 - Date.now();
 
-        // Only notify if time remaining is positive and less than threshold
+        // Check if we should send notification
         if (
           timeRemaining > 0 &&
-          timeRemaining < config.REWARDS_NOTIFICATION_THRESHOLD * 1000
+          timeRemaining < config.REWARDS_NOTIFICATION_THRESHOLD * 1000 &&
+          !this.hasRecentlyNotified()
         ) {
           const roundEndTimestamp = Math.floor(nextRoundTime);
+          const formattedTotalStaked = formatters.usdValue(totalStaked);
 
           const embed = new EmbedBuilder()
             .setColor(CONSTANTS.COLORS.PRIMARY as ColorResolvable)
@@ -64,7 +74,10 @@ export class RewardsManager {
             .addFields(
               {
                 name: "💰 Rewards Summary",
-                value: formatters.rewardsSummary(pendingUsdcRewards, roundEndTimestamp),
+                value: formatters.rewardsSummary(
+                  pendingUsdcRewards,
+                  roundEndTimestamp
+                ),
                 inline: false,
               },
               {
@@ -75,6 +88,12 @@ export class RewardsManager {
             );
 
           await channel.send({ embeds: [embed] });
+
+          // Update last notification time after successful send
+          this.lastNotificationTime = Date.now();
+          console.log(
+            `Sent notification for ${stakingType} staking rewards at ${new Date().toISOString()}`
+          );
         }
       }
     } catch (error) {
