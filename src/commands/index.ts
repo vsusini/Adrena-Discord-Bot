@@ -9,6 +9,8 @@ import * as help from "./help";
 import * as tutorial from "./tutorial";
 import * as tip from "./tip";
 import * as liquidity from "./liquidity";
+import * as alp from "./alp";
+import * as adx from "./adx";
 import { config } from "../config";
 
 // Create a map of command handlers
@@ -23,6 +25,8 @@ const commandHandlers = {
   [tutorial.command.name]: tutorial.handleTutorialCommand,
   [tip.command.name]: tip.handleTipCommand,
   [liquidity.command.name]: liquidity.handleLiquidityCommand,
+  [alp.command.name]: alp.handleAlpCommand,
+  [adx.command.name]: adx.handleAdxCommand,
 } as const;
 
 export async function setupCommands(client: Client) {
@@ -43,6 +47,8 @@ export async function setupCommands(client: Client) {
     tutorial.command,
     tip.command,
     liquidity.command,
+    alp.command,
+    adx.command,
   ].map((command) => command.toJSON());
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
   try {
