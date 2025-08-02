@@ -276,12 +276,20 @@ export async function readAdrenaAccount(
       );
 
       // Calculate percentage staked
+      const adxTreasuryBalanceStr = await getTokenAccountBalance(
+        connection,
+        "7KR5Km1NkUJsL1CLnXPmMxoE3Fq2kZyoWYSwrv5YkJ9T" // Treasury token account
+      );
+      const adxTreasuryBalance = new BigNumber(
+        adxTreasuryBalanceStr.replace(/,/g, "")
+      );
+      const totalSupplyBN = new BigNumber(totalSupply.replace(/,/g, ""));
+      // Remove treasury balance from supply.
+      const circulating = totalSupplyBN.minus(adxTreasuryBalance);
+
       const percentageStaked =
         totalSupply !== "0" && !totalSupply.includes("Error")
-          ? new BigNumber(totalStaked)
-              .dividedBy(new BigNumber(totalSupply.replace(/,/g, "")))
-              .multipliedBy(100)
-              .toFixed(2)
+          ? totalStaked.dividedBy(circulating).multipliedBy(100).toFixed(2)
           : "0";
 
       summary = {
