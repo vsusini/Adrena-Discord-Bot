@@ -5,16 +5,18 @@ import { config } from "../config";
 
 export class StatusManager {
   private client: Client;
+  private currentTokenIndex: number;
   private readonly tokens: TokenType[];
   private updateInterval: NodeJS.Timeout | null;
 
   constructor(client: Client) {
     this.client = client;
+    this.currentTokenIndex = 0;
     this.tokens = ["ADX", "ALP"];
     this.updateInterval = null;
   }
 
-  async updateBotStatus(): Promise<void> {
+  async updateBotStatus(token: TokenType): Promise<void> {
     try {
       console.log(`Attempting to update status...`);
       const prices = await fetchTokenPrices();
@@ -23,9 +25,14 @@ export class StatusManager {
         const adxPrice =
           prices.adx !== null ? `$${Number(prices.adx).toFixed(4)}` : "N/A";
         const alpPrice =
-          prices.alp !== null ? `$${Number(prices.alp).toFixed(4)}` : "N/A";
-
-        const formattedPrice = `ADX ${adxPrice} / ALP ${alpPrice}`;
+          prices.alp !== null ? `$${Number(prices.alp).toFixed(2)}` : "N/A";
+          
+        var formattedPrice;
+        if (token == "ADX") {
+          formattedPrice = `ADX ${adxPrice}`;
+        } else {
+          formattedPrice = `ALP ${alpPrice}`;
+        }
 
         // Update nickname in all guilds
         for (const guild of this.client.guilds.cache.values()) {
@@ -43,7 +50,7 @@ export class StatusManager {
         }
 
         // Keep the existing watching status
-        const status = `Tracking ADX and ALP`;
+        const status = `${token} Price`;
         await this.client.user.setActivity(status, {
           type: ActivityType.Watching,
         });
@@ -68,11 +75,13 @@ export class StatusManager {
     }
 
     // Immediate first update
-    this.updateBotStatus();
+    this.updateBotStatus(this.tokens[this.currentTokenIndex]);
 
     // Set up the interval
     this.updateInterval = setInterval(() => {
-      this.updateBotStatus();
+      this.currentTokenIndex =
+        (this.currentTokenIndex + 1) % this.tokens.length;
+      this.updateBotStatus(this.tokens[this.currentTokenIndex]);
     }, config.UPDATE_INTERVAL * 1000);
 
     console.log(
