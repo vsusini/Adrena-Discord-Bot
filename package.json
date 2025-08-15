@@ -18,6 +18,7 @@
     "axios": "^1.6.7",
     "better-sqlite3": "^11.9.1",
     "bignumber.js": "^9.1.2",
+    "dayjs": "^1.11.13",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5"
   },

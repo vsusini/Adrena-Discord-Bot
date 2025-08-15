@@ -95,3 +95,83 @@ export const fetchPosition = async (positionId: number, wallet: string): Promise
     return null;
   }
 };
+
+/**
+ * Fetches daily trading volume (USD) for a given date range.
+ * @param endDate ISO string (e.g. "2025-08-14T00:00:00.000Z")
+ */
+export async function fetchDailyTradingVolumeUSD(
+  endDate: string
+): Promise<number | null> {
+  try {
+    const url = `https://datapi.adrena.xyz/pool-high-level-stats?end_date=${encodeURIComponent(
+      endDate
+    )}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error("Failed to fetch trading volume:", response.statusText);
+      return null;
+    }
+    const data = await response.json();
+    if (
+      data.success &&
+      data.data.daily_volume_usd
+    ) {
+      return data.data.daily_volume_usd;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching trading volume:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetches total open interest (long + short) in USD for the latest day.
+ * @param startDate ISO string (yesterday)
+ * @param endDate ISO string (today)
+ * @returns { totalLong: number, totalShort: number, totalOI: number }
+ */
+export async function fetchCurrentOpenInterestUSD(
+  startDate: string,
+  endDate: string
+): Promise<{ totalLong: number; totalShort: number; totalOI: number } | null> {
+  try {
+    const query = `https://datapi.adrena.xyz/custodyinfodaily?open_interest_long_usd=true&open_interest_short_usd=true&start_date=${encodeURIComponent(
+      startDate
+    )}&end_date=${encodeURIComponent(endDate)}&page=1&limit=1`;
+
+    const response = await fetch(query);
+    const data = await response.json();
+
+    if (!data.success || !data.data) return null;
+
+    // Get the last values for each key (should be only one if limit=1)
+    let totalLong = 0;
+    let totalShort = 0;
+
+    const longs = data.data.open_interest_long_usd;
+    const shorts = data.data.open_interest_short_usd;
+
+    // Sum the last value of each account (should be only one value per array)
+    for (const arr of Object.values(longs)) {
+      if (Array.isArray(arr) && arr.length > 0) {
+        totalLong += Number(arr[arr.length - 1]);
+      }
+    }
+    for (const arr of Object.values(shorts)) {
+      if (Array.isArray(arr) && arr.length > 0) {
+        totalShort += Number(arr[arr.length - 1]);
+      }
+    }
+
+    return {
+      totalLong,
+      totalShort,
+      totalOI: totalLong + totalShort,
+    };
+  } catch (error) {
+    console.error("Error fetching open interest:", error);
+    return null;
+  }
+}

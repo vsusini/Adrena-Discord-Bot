@@ -1,7 +1,10 @@
 import { Client, ActivityType } from "discord.js";
-import { fetchTokenPrice, fetchTokenPrices } from "../utils/api";
+import { fetchCurrentOpenInterestUSD, fetchDailyTradingVolumeUSD, fetchTokenPrices } from "../utils/api";
 import { TokenType } from "../utils/types";
 import { config } from "../config";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { formatters } from "../utils/formatters";
 
 export class StatusManager {
   private client: Client;
@@ -16,6 +19,74 @@ export class StatusManager {
     this.updateInterval = null;
   }
 
+  /**
+   * Updates the channel name to show current open interest (OI).
+   * @param channelId Discord channel ID
+   */
+  async updateOIChannelName(channelId: string): Promise<void> {
+    try {
+      dayjs.extend(utc);
+      const today = dayjs().utc().startOf("day");
+      const yesterday = today.subtract(1, "day");
+
+      const startDate = yesterday.toISOString();
+      const endDate = today.toISOString();
+
+      const oi = await fetchCurrentOpenInterestUSD(startDate, endDate);
+
+      if (oi !== null) {
+        const formatted = formatters.usdValue(oi.totalOI);
+        const channel = await this.client.channels.fetch(channelId);
+        if (channel && channel.isTextBased()) {
+          const newName = `Current OI - $${(oi.totalOI / 1_000_000).toFixed(2)}m`;
+          // @ts-ignore
+          await channel.setName(newName);
+          console.log(
+            `Updated channel ${channelId} to ${newName} (${formatted})`
+          );
+        }
+      } else {
+        console.error("Could not fetch open interest.");
+      }
+    } catch (error) {
+      console.error("Error updating OI channel name:", error);
+    }
+  }
+
+  /**
+   * Updates the channel name to show daily trading volume.
+   * @param channelId Discord channel ID
+   */
+  async updateVolumeChannelName(channelId: string): Promise<void> {
+    try {
+      // Get today's date in UTC
+      dayjs.extend(utc);
+
+      // Current time in UTC
+      const today = dayjs().utc();
+      const endDate = today.toISOString();
+
+      const volume = await fetchDailyTradingVolumeUSD(endDate);
+
+      if (volume !== null) {
+        const formatted = formatters.usdValue(volume);
+        const channel = await this.client.channels.fetch(channelId);
+        if (channel && channel.isTextBased()) {
+          const newName = `24hr Volume - $${(volume / 1_000_000).toFixed(2)}m`;
+          // @ts-ignore
+          await channel.setName(newName);
+          console.log(
+            `Updated channel ${channelId} to ${newName} (${formatted})`
+          );
+        }
+      } else {
+        console.error("Could not fetch daily trading volume.");
+      }
+    } catch (error) {
+      console.error("Error updating volume channel name:", error);
+    }
+  }
+
   async updateBotStatus(token: TokenType): Promise<void> {
     try {
       console.log(`Attempting to update status...`);
@@ -26,7 +97,7 @@ export class StatusManager {
           prices.adx !== null ? `$${Number(prices.adx).toFixed(4)}` : "N/A";
         const alpPrice =
           prices.alp !== null ? `$${Number(prices.alp).toFixed(2)}` : "N/A";
-          
+
         var formattedPrice;
         if (token == "ADX") {
           formattedPrice = `ADX ${adxPrice}`;
@@ -76,12 +147,16 @@ export class StatusManager {
 
     // Immediate first update
     this.updateBotStatus(this.tokens[this.currentTokenIndex]);
+    this.updateVolumeChannelName(config.VOLUME_CHANNEL_ID);
+    this.updateOIChannelName(config.OI_CHANNEL_ID)
 
     // Set up the interval
     this.updateInterval = setInterval(() => {
       this.currentTokenIndex =
         (this.currentTokenIndex + 1) % this.tokens.length;
       this.updateBotStatus(this.tokens[this.currentTokenIndex]);
+      this.updateVolumeChannelName(config.VOLUME_CHANNEL_ID);
+      this.updateOIChannelName(config.OI_CHANNEL_ID)
     }, config.UPDATE_INTERVAL * 1000);
 
     console.log(
