@@ -1,10 +1,15 @@
 import { Client, ActivityType } from "discord.js";
-import { fetchCurrentOpenInterestUSD, fetchDailyTradingVolumeUSD, fetchTokenPrices } from "../utils/api";
+import {
+  fetchCurrentOpenInterestUSD,
+  fetchDailyTradingVolumeUSD,
+  fetchTokenPrices,
+} from "../utils/api";
 import { TokenType } from "../utils/types";
 import { config } from "../config";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { formatters } from "../utils/formatters";
+dayjs.extend(utc);
 
 export class StatusManager {
   private client: Client;
@@ -25,26 +30,16 @@ export class StatusManager {
    */
   async updateOIChannelName(channelId: string): Promise<void> {
     try {
-      dayjs.extend(utc);
       const today = dayjs().utc().startOf("day");
       const yesterday = today.subtract(1, "day");
-
       const startDate = yesterday.toISOString();
       const endDate = today.toISOString();
-
       const oi = await fetchCurrentOpenInterestUSD(startDate, endDate);
 
       if (oi !== null) {
         const formatted = formatters.usdValue(oi.totalOI);
-        const channel = await this.client.channels.fetch(channelId);
-        if (channel && channel.isTextBased()) {
-          const newName = `Current OI - $${(oi.totalOI / 1_000_000).toFixed(2)}m`;
-          // @ts-ignore
-          await channel.setName(newName);
-          console.log(
-            `Updated channel ${channelId} to ${newName} (${formatted})`
-          );
-        }
+        const newName = `Current OI - $${(oi.totalOI / 1_000_000).toFixed(2)}m`;
+        await this.setChannelName(channelId, newName, formatted, "OI");
       } else {
         console.error("Could not fetch open interest.");
       }
@@ -59,31 +54,37 @@ export class StatusManager {
    */
   async updateVolumeChannelName(channelId: string): Promise<void> {
     try {
-      // Get today's date in UTC
-      dayjs.extend(utc);
-
-      // Current time in UTC
       const today = dayjs().utc();
       const endDate = today.toISOString();
-
       const volume = await fetchDailyTradingVolumeUSD(endDate);
 
       if (volume !== null) {
         const formatted = formatters.usdValue(volume);
-        const channel = await this.client.channels.fetch(channelId);
-        if (channel && channel.isTextBased()) {
-          const newName = `24hr Volume - $${(volume / 1_000_000).toFixed(2)}m`;
-          // @ts-ignore
-          await channel.setName(newName);
-          console.log(
-            `Updated channel ${channelId} to ${newName} (${formatted})`
-          );
-        }
+        const newName = `24hr Volume test - $${(volume / 1_000_000).toFixed(
+          2
+        )}m`;
+        await this.setChannelName(channelId, newName, formatted, "Volume");
       } else {
         console.error("Could not fetch daily trading volume.");
       }
     } catch (error) {
       console.error("Error updating volume channel name:", error);
+    }
+  }
+
+  private async setChannelName(
+    channelId: string,
+    newName: string,
+    logValue: string,
+    label: string
+  ) {
+    const channel = await this.client.channels.fetch(channelId);
+    if (channel && channel.isTextBased()) {
+      // @ts-ignore
+      await channel.setName(newName);
+      console.log(
+        `Updated channel ${channelId} to ${newName} (${logValue}) [${label}]`
+      );
     }
   }
 
@@ -148,7 +149,7 @@ export class StatusManager {
     // Immediate first update
     this.updateBotStatus(this.tokens[this.currentTokenIndex]);
     this.updateVolumeChannelName(config.VOLUME_CHANNEL_ID);
-    this.updateOIChannelName(config.OI_CHANNEL_ID)
+    this.updateOIChannelName(config.OI_CHANNEL_ID);
 
     // Set up the interval
     this.updateInterval = setInterval(() => {
@@ -156,7 +157,7 @@ export class StatusManager {
         (this.currentTokenIndex + 1) % this.tokens.length;
       this.updateBotStatus(this.tokens[this.currentTokenIndex]);
       this.updateVolumeChannelName(config.VOLUME_CHANNEL_ID);
-      this.updateOIChannelName(config.OI_CHANNEL_ID)
+      this.updateOIChannelName(config.OI_CHANNEL_ID);
     }, config.UPDATE_INTERVAL * 1000);
 
     console.log(
