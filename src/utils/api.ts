@@ -115,7 +115,6 @@ export async function fetchDailyTradingVolumeUSD(
     const url = `https://datapi.adrena.xyz/poolinfodaily?cumulative_trading_volume_usd=true&start_date=${encodeURIComponent(
       startDate
     )}&end_date=${encodeURIComponent(endDate)}`;
-    console.log("Trading Volume URL:", url);
     const response = await fetch(url);
     if (!response.ok) {
       console.error("Failed to fetch trading volume:", response.statusText);
