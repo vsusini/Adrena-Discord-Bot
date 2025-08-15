@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { PositionResponse, Position, DetailedPosition } from './types';
+import axios from "axios";
+import { PositionResponse, Position, DetailedPosition } from "./types";
 
 interface MutagenEntry {
   user_wallet: string;
@@ -19,16 +19,19 @@ export async function fetchTokenPrice(token: string): Promise<number | null> {
   return data.success ? data.data[token.toLowerCase()].price : null;
 }
 
-export async function fetchTokenPrices(): Promise<{ adx: number | null; alp: number | null }> {
+export async function fetchTokenPrices(): Promise<{
+  adx: number | null;
+  alp: number | null;
+}> {
   const response = await fetch(`https://datapi.adrena.xyz/last-price`);
-  
+
   if (!response.ok) {
     console.error("Failed to fetch token prices:", response.statusText);
     return { adx: null, alp: null };
   }
 
   const data = await response.json();
-  
+
   return data.success
     ? {
         adx: data.data["adx"]?.price ?? null,
@@ -74,39 +77,45 @@ export const fetchPositions = async (wallet: string): Promise<Position[]> => {
   try {
     const response = await axios.get<PositionResponse>(
       `https://datapi.adrena.xyz/position?user_wallet=${wallet}&status=open&limit=10`,
-      { headers: { accept: 'application/json' } }
+      { headers: { accept: "application/json" } }
     );
     return response.data.data;
   } catch (error) {
-    console.error('Error fetching positions:', error);
+    console.error("Error fetching positions:", error);
     return [];
   }
 };
 
-export const fetchPosition = async (positionId: number, wallet: string): Promise<DetailedPosition | null> => {
+export const fetchPosition = async (
+  positionId: number,
+  wallet: string
+): Promise<DetailedPosition | null> => {
   try {
     const response = await axios.get<PositionResponse>(
       `https://datapi.adrena.xyz/position?position_id=${positionId}&user_wallet=${wallet}&limit=1`,
-      { headers: { accept: 'application/json' } }
+      { headers: { accept: "application/json" } }
     );
     return response.data.data[0] || null;
   } catch (error) {
-    console.error('Error fetching position:', error);
+    console.error("Error fetching position:", error);
     return null;
   }
 };
 
 /**
  * Fetches daily trading volume (USD) for a given date range.
+ * @param startDate ISO string (e.g. "2025-08-14T00:00:00.000Z")
  * @param endDate ISO string (e.g. "2025-08-14T00:00:00.000Z")
  */
 export async function fetchDailyTradingVolumeUSD(
+  startDate: string,
   endDate: string
 ): Promise<number | null> {
   try {
-    const url = `https://datapi.adrena.xyz/pool-high-level-stats?end_date=${encodeURIComponent(
-      endDate
-    )}`;
+    const url = `https://datapi.adrena.xyz/poolinfodaily?cumulative_trading_volume_usd=true&start_date=${encodeURIComponent(
+      startDate
+    )}&end_date=${encodeURIComponent(endDate)}`;
+    console.log("Trading Volume URL:", url);
     const response = await fetch(url);
     if (!response.ok) {
       console.error("Failed to fetch trading volume:", response.statusText);
@@ -115,9 +124,12 @@ export async function fetchDailyTradingVolumeUSD(
     const data = await response.json();
     if (
       data.success &&
-      data.data.daily_volume_usd
+      data.data.cumulative_trading_volume_usd &&
+      data.data.cumulative_trading_volume_usd.length >= 2
     ) {
-      return data.data.daily_volume_usd;
+      const arr = data.data.cumulative_trading_volume_usd;
+      const dailyVolume = arr[arr.length - 1] - arr[arr.length - 2];
+      return dailyVolume;
     }
     return null;
   } catch (error) {
@@ -132,15 +144,13 @@ export async function fetchDailyTradingVolumeUSD(
  * @param endDate ISO string (today)
  * @returns { totalLong: number, totalShort: number, totalOI: number }
  */
-export async function fetchCurrentOpenInterestUSD(
-  startDate: string,
-  endDate: string
-): Promise<{ totalLong: number; totalShort: number; totalOI: number } | null> {
+export async function fetchCurrentOpenInterestUSD(): Promise<{
+  totalLong: number;
+  totalShort: number;
+  totalOI: number;
+} | null> {
   try {
-    const query = `https://datapi.adrena.xyz/custodyinfodaily?open_interest_long_usd=true&open_interest_short_usd=true&start_date=${encodeURIComponent(
-      startDate
-    )}&end_date=${encodeURIComponent(endDate)}&page=1&limit=1`;
-
+    const query = `https://datapi.adrena.xyz/custodyinfo?open_interest_long_usd=true&open_interest_short_usd=true&limit=1&sort=DESC`;
     const response = await fetch(query);
     const data = await response.json();
 

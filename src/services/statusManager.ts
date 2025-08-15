@@ -30,11 +30,7 @@ export class StatusManager {
    */
   async updateOIChannelName(channelId: string): Promise<void> {
     try {
-      const today = dayjs().utc().startOf("day");
-      const yesterday = today.subtract(1, "day");
-      const startDate = yesterday.toISOString();
-      const endDate = today.toISOString();
-      const oi = await fetchCurrentOpenInterestUSD(startDate, endDate);
+      const oi = await fetchCurrentOpenInterestUSD();
 
       if (oi !== null) {
         const formatted = formatters.usdValue(oi.totalOI);
@@ -56,13 +52,13 @@ export class StatusManager {
     try {
       const today = dayjs().utc();
       const endDate = today.toISOString();
-      const volume = await fetchDailyTradingVolumeUSD(endDate);
+      const startDate = today.subtract(1, "month").toISOString();
+
+      const volume = await fetchDailyTradingVolumeUSD(startDate, endDate);
 
       if (volume !== null) {
         const formatted = formatters.usdValue(volume);
-        const newName = `24hr Volume - $${(volume / 1_000_000).toFixed(
-          2
-        )}m`;
+        const newName = `24hr Volume - $${(volume / 1_000_000).toFixed(2)}m`;
         await this.setChannelName(channelId, newName, formatted, "Volume");
       } else {
         console.error("Could not fetch daily trading volume.");
