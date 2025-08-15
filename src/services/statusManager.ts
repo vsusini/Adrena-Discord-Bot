@@ -60,7 +60,7 @@ export class StatusManager {
 
       if (volume !== null) {
         const formatted = formatters.usdValue(volume);
-        const newName = `24hr Volume test - $${(volume / 1_000_000).toFixed(
+        const newName = `24hr Volume - $${(volume / 1_000_000).toFixed(
           2
         )}m`;
         await this.setChannelName(channelId, newName, formatted, "Volume");
