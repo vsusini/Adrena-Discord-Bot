@@ -9,7 +9,7 @@ interface MutagenEntry {
 
 export async function fetchTokenPrice(token: string): Promise<number | null> {
   const response = await fetch(
-    `https://datapi.adrena.xyz/last-price?token=${token}`
+    `https://datapi.adrena.xyz/last-price`
   );
   if (!response.ok) {
     console.error("Failed to fetch token price:", response.statusText);
