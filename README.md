@@ -7,7 +7,7 @@ A Discord bot that tracks token prices, staking rewards, and trading positions f
 - Website: https://www.adrena.trade/
 - X: https://x.com/AdrenaProtocol
 - Discord: https://discord.gg/Z3UZAVA2ch
-- Docs: https://docs.adrena.xyz/
+- Docs: https://docs.adrena.trade/
 
 ## Features
 
